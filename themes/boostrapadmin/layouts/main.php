@@ -59,7 +59,8 @@ use yii\helpers\Html;
           <ul class="dropdown-menu">
           <?php 
           $Session = Yii::$app->session;
-          $status = $Session->get('status');
+          $status = $Session->get('status_beasiswa');
+          
           if ($status == 1): 
           ?>            
             <li><a href="<?= Url::to(['daftar/perpanjangan']); ?>">Perpanjangan</a></li>

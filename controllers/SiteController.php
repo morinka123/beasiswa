@@ -1,6 +1,7 @@
 <?php
 
 namespace app\controllers;
+
 use app\models\User;
 use Yii;
 use yii\filters\AccessControl;
@@ -13,10 +14,9 @@ use app\models\Registrasi;
 use app\vendor\PHPMailer\PHPMailerAutoload;
 use app\vendor\PHPMailer;
 
-class SiteController extends Controller
-{
-    public function behaviors()
-    {
+class SiteController extends Controller {
+
+    public function behaviors() {
         return [
             'access' => [
                 'class' => AccessControl::className(),
@@ -38,8 +38,7 @@ class SiteController extends Controller
         ];
     }
 
-    public function actions()
-    {
+    public function actions() {
         return [
             'error' => [
                 'class' => 'yii\web\ErrorAction',
@@ -51,17 +50,15 @@ class SiteController extends Controller
         ];
     }
 
-    public function actionIndex()
-    {
-    
+    public function actionIndex() {
+
         if (!\Yii::$app->user->isGuest) {
-             $this->redirect(\Yii::$app->urlManager->createUrl("user/index"));
+            $this->redirect(\Yii::$app->urlManager->createUrl("user/index"));
         } else
-        $this->redirect(\Yii::$app->urlManager->createUrl("site/login"));
+            $this->redirect(\Yii::$app->urlManager->createUrl("site/login"));
     }
 
-    public function actionLogin()
-    {
+    public function actionLogin() {
         if (!\Yii::$app->user->isGuest) {
             return $this->goHome();
         }
@@ -69,83 +66,78 @@ class SiteController extends Controller
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
             $Session = Yii::$app->session;
             $Session->open();
-        
-            $registrasi = Registrasi::findOne(['user_id'=>Yii::$app->user->identity->id]);
-            if (count ($registrasi) == 0 or count ($registrasi) == 1  ){
+
+            $registrasi = Registrasi::findOne(['user_id' => Yii::$app->user->identity->id]);
+//            if (count ($registrasi) == 0 or count ($registrasi) == 1  ){
+//                $status_beasiswa = 0;
+//            }
+//            else{
+//
+//                $status_beasiswa = 1;
+//            }
+            if (count($registrasi) == 0) {
                 $status_beasiswa = 0;
-            }
-            else{
+            } else {
 
                 $status_beasiswa = 1;
             }
-            $Session->set('status_beasiswa',$status_beasiswa);
+            $Session->set('status_beasiswa', $status_beasiswa);
 
             return $this->goBack();
         }
         return $this->renderPartial('login', [
-            'model' => $model,
+                    'model' => $model,
         ]);
     }
 
-
-    public function actionRegister()
-    {
+    public function actionRegister() {
         $model = new User();
-           
+
         if (Yii::$app->request->post()) {
             //return $this->redirect(['view', 'id' => $model->id]);
-            if ($_POST['User']['password'] == $_POST['User']['confirm_password']){
+            if ($_POST['User']['password'] == $_POST['User']['confirm_password']) {
 
-                $model->email=($_POST['User']['email']);
-                $model->password=md5($_POST['User']['password']);
-                $model->code_verifikasi=md5(uniqid(rand()));
-               
-            if($model->save()){
+                $model->email = ($_POST['User']['email']);
+                $model->password = md5($_POST['User']['password']);
+                $model->code_verifikasi = md5(uniqid(rand()));
 
-                \Yii::$app->mail->compose()
-                     ->setFrom('morinkamorinka32@gmail.com')
-                     ->setTo($model->email)
-                     ->setSubject('Aktivasi Pendaftaran Beasiswa R-ZIS' )
-                     ->setTextBody('http://localhost/beasiswa/web/site/verifikasi?code='.$model->code_verifikasi)
-                     ->send();
-              $this->redirect(\Yii::$app->urlManager->createUrl("site/login"));
+                if ($model->save()) {
+
+                    \Yii::$app->mail->compose()
+                            ->setFrom('morinkamorinka32@gmail.com')
+                            ->setTo($model->email)
+                            ->setSubject('Aktivasi Pendaftaran Beasiswa R-ZIS')
+                            ->setTextBody('http://localhost/beasiswa/web/site/verifikasi?code=' . $model->code_verifikasi)
+                            ->send();
+                    $this->redirect(\Yii::$app->urlManager->createUrl("site/login"));
+                }
             }
-
-            }  
         }
-        return $this->renderPartial('register',[
-            'model' => $model,
+        return $this->renderPartial('register', [
+                    'model' => $model,
         ]);
-
     }
 
-    public function actionVerifikasi($code)
-    {
-        $sql = "update user set is_verif = 1 where code_verifikasi = '$code'"; 
+    public function actionVerifikasi($code) {
+        $sql = "update user set is_verif = 1 where code_verifikasi = '$code'";
         Yii::$app->db->createCommand($sql)->execute();
         //$this->redirect(\Yii::$app->urlManager->createUrl("site/login"));
 
         return $this->renderPartial('verifikasi');
-
     }
 
-    public function actionInvalid()
-    {    
+    public function actionInvalid() {
 
         return $this->render('invalid');
-
     }
 
-
-    public function actionLogout()
-    {
+    public function actionLogout() {
         Yii::$app->user->logout();
 
         return $this->goHome();
     }
 
-    public function actionContact()
-    {
+    public function actionContact() {
         $model = new ContactForm();
         if ($model->load(Yii::$app->request->post()) && $model->contact(Yii::$app->params['adminEmail'])) {
             Yii::$app->session->setFlash('contactFormSubmitted');
@@ -153,12 +145,12 @@ class SiteController extends Controller
             return $this->refresh();
         }
         return $this->render('contact', [
-            'model' => $model,
+                    'model' => $model,
         ]);
     }
 
-    public function actionAbout()
-    {
+    public function actionAbout() {
         return $this->render('about');
     }
+
 }
